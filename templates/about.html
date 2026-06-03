@@ -1,0 +1,220 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}FreshScan AI – About{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+
+  <!-- Hero -->
+  <div class="text-center mb-5 fade-in">
+    <p class="section-label">About</p>
+    <h2 class="section-title">FreshScan AI</h2>
+    <p style="color:var(--text-secondary);max-width:560px;margin:0 auto 20px;font-size:1rem;line-height:1.8;">
+      An intelligent food freshness detection system powered by Convolutional Neural Networks,
+      built as a final-year engineering project using Django and TensorFlow.
+    </p>
+    <div class="d-flex gap-3 justify-content-center flex-wrap">
+      <span class="stat-chip"><span class="dot" style="background:var(--green);"></span> Django 4.2</span>
+      <span class="stat-chip"><span class="dot" style="background:#FF6D00;"></span> TensorFlow 2.13</span>
+      <span class="stat-chip"><span class="dot" style="background:#448AFF;"></span> MobileNetV2 CNN</span>
+      <span class="stat-chip"><span class="dot" style="background:#AA00FF;"></span> OpenCV</span>
+    </div>
+  </div>
+
+  <!-- How it works -->
+  <div class="glass-card p-4 p-md-5 mb-4 fade-in delay-1">
+    <h4 style="font-family:var(--font-display);margin-bottom:24px;">⚙️ How It Works</h4>
+    <div class="row g-4">
+
+      <div class="col-md-3 text-center">
+        <div class="feature-icon mx-auto">📷</div>
+        <h6 style="font-family:var(--font-display);">1. Upload</h6>
+        <p style="font-size:0.82rem;color:var(--text-secondary);">
+          User uploads a food image (JPG/PNG) via drag-drop or webcam capture.
+        </p>
+      </div>
+
+      <div class="col-md-3 text-center">
+        <div class="feature-icon mx-auto">🔬</div>
+        <h6 style="font-family:var(--font-display);">2. Preprocess</h6>
+        <p style="font-size:0.82rem;color:var(--text-secondary);">
+          OpenCV resizes, normalises, and enhances the image to 224×224 for the CNN.
+        </p>
+      </div>
+
+      <div class="col-md-3 text-center">
+        <div class="feature-icon mx-auto">🧠</div>
+        <h6 style="font-family:var(--font-display);">3. Predict</h6>
+        <p style="font-size:0.82rem;color:var(--text-secondary);">
+          MobileNetV2 CNN classifies the image into Fresh, Semi-Fresh, or Rotten.
+        </p>
+      </div>
+
+      <div class="col-md-3 text-center">
+        <div class="feature-icon mx-auto">📊</div>
+        <h6 style="font-family:var(--font-display);">4. Report</h6>
+        <p style="font-size:0.82rem;color:var(--text-secondary);">
+          Results include freshness %, shelf life, expiry date, storage tips, PDF & QR.
+        </p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Tech Stack -->
+  <div class="row g-4 mb-4">
+
+    <div class="col-md-6 fade-in delay-1">
+      <div class="glass-card p-4 h-100">
+        <h5 style="font-family:var(--font-display);margin-bottom:20px;">🏗️ Tech Stack</h5>
+        {% for tech, desc in tech_stack %}{% endfor %}
+        <div class="mb-3">
+          <div class="d-flex justify-content-between mb-1">
+            <span style="font-size:0.85rem;font-weight:600;">Python / Django</span>
+            <span style="font-size:0.8rem;color:var(--text-muted);">Backend Framework</span>
+          </div>
+          <div class="freshness-bar-wrap" style="height:6px;">
+            <div class="freshness-bar fresh" style="width:100%;"></div>
+          </div>
+        </div>
+        <div class="mb-3">
+          <div class="d-flex justify-content-between mb-1">
+            <span style="font-size:0.85rem;font-weight:600;">TensorFlow / Keras</span>
+            <span style="font-size:0.8rem;color:var(--text-muted);">Deep Learning</span>
+          </div>
+          <div class="freshness-bar-wrap" style="height:6px;">
+            <div class="freshness-bar fresh" style="width:95%;"></div>
+          </div>
+        </div>
+        <div class="mb-3">
+          <div class="d-flex justify-content-between mb-1">
+            <span style="font-size:0.85rem;font-weight:600;">OpenCV</span>
+            <span style="font-size:0.8rem;color:var(--text-muted);">Image Processing</span>
+          </div>
+          <div class="freshness-bar-wrap" style="height:6px;">
+            <div class="freshness-bar semi" style="width:88%;"></div>
+          </div>
+        </div>
+        <div class="mb-3">
+          <div class="d-flex justify-content-between mb-1">
+            <span style="font-size:0.85rem;font-weight:600;">Bootstrap 5 + JS</span>
+            <span style="font-size:0.8rem;color:var(--text-muted);">Frontend</span>
+          </div>
+          <div class="freshness-bar-wrap" style="height:6px;">
+            <div class="freshness-bar fresh" style="width:92%;"></div>
+          </div>
+        </div>
+        <div class="mb-0">
+          <div class="d-flex justify-content-between mb-1">
+            <span style="font-size:0.85rem;font-weight:600;">SQLite</span>
+            <span style="font-size:0.8rem;color:var(--text-muted);">Database</span>
+          </div>
+          <div class="freshness-bar-wrap" style="height:6px;">
+            <div class="freshness-bar fresh" style="width:80%;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6 fade-in delay-2">
+      <div class="glass-card p-4 h-100">
+        <h5 style="font-family:var(--font-display);margin-bottom:20px;">🤖 CNN Model Details</h5>
+        <div class="mb-3" style="background:rgba(255,255,255,0.03);border-radius:10px;padding:14px;">
+          <p style="font-size:0.72rem;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;">Architecture</p>
+          <p style="font-weight:700;margin:0;">MobileNetV2 (Transfer Learning)</p>
+        </div>
+        <div class="mb-3" style="background:rgba(255,255,255,0.03);border-radius:10px;padding:14px;">
+          <p style="font-size:0.72px;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;font-size:0.72rem;">Input Size</p>
+          <p style="font-weight:700;margin:0;">224 × 224 × 3 (RGB)</p>
+        </div>
+        <div class="mb-3" style="background:rgba(255,255,255,0.03);border-radius:10px;padding:14px;">
+          <p style="font-size:0.72rem;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;">Output Classes</p>
+          <p style="font-weight:700;margin:0;">4 (fresh_fruits, fresh_vegetables, rotten_fruits, rotten_vegetables)</p>
+        </div>
+        <div class="mb-3" style="background:rgba(255,255,255,0.03);border-radius:10px;padding:14px;">
+          <p style="font-size:0.72rem;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;">Training Strategy</p>
+          <p style="font-weight:700;margin:0;">2-phase fine-tuning + Data Augmentation</p>
+        </div>
+        <div style="background:rgba(0,200,83,0.06);border:1px solid rgba(0,200,83,0.2);border-radius:10px;padding:14px;">
+          <p style="font-size:0.72rem;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;">Target Accuracy</p>
+          <p style="font-family:var(--font-display);font-size:1.4rem;font-weight:800;color:var(--green);margin:0;">≥ 92%</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Features list -->
+  <div class="glass-card p-4 p-md-5 fade-in delay-2">
+    <h5 style="font-family:var(--font-display);margin-bottom:24px;">✨ Key Features</h5>
+    <div class="row g-3">
+      {% for feature in feature_list %}{% endfor %}
+      {% for item in "123456789012"|make_list %}
+      {% endfor %}
+      <div class="col-md-6 col-lg-4">
+        <div style="display:flex;gap:12px;align-items:flex-start;">
+          <span style="color:var(--green);font-size:1rem;flex-shrink:0;margin-top:2px;">✓</span>
+          <p style="font-size:0.88rem;color:var(--text-secondary);margin:0;">CNN-based freshness classification (Fresh / Semi-Fresh / Rotten)</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-4">
+        <div style="display:flex;gap:12px;align-items:flex-start;">
+          <span style="color:var(--green);font-size:1rem;flex-shrink:0;margin-top:2px;">✓</span>
+          <p style="font-size:0.88rem;color:var(--text-secondary);margin:0;">Freshness percentage score with visual ring indicator</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-4">
+        <div style="display:flex;gap:12px;align-items:flex-start;">
+          <span style="color:var(--green);font-size:1rem;flex-shrink:0;margin-top:2px;">✓</span>
+          <p style="font-size:0.88rem;color:var(--text-secondary);margin:0;">Shelf life prediction in days and hours</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-4">
+        <div style="display:flex;gap:12px;align-items:flex-start;">
+          <span style="color:var(--green);font-size:1rem;flex-shrink:0;margin-top:2px;">✓</span>
+          <p style="font-size:0.88rem;color:var(--text-secondary);margin:0;">AI-generated storage suggestions based on food category</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-4">
+        <div style="display:flex;gap:12px;align-items:flex-start;">
+          <span style="color:var(--green);font-size:1rem;flex-shrink:0;margin-top:2px;">✓</span>
+          <p style="font-size:0.88rem;color:var(--text-secondary);margin:0;">Real-time webcam detection with live capture</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-4">
+        <div style="display:flex;gap:12px;align-items:flex-start;">
+          <span style="color:var(--green);font-size:1rem;flex-shrink:0;margin-top:2px;">✓</span>
+          <p style="font-size:0.88rem;color:var(--text-secondary);margin:0;">PDF report download &amp; QR code generation</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-4">
+        <div style="display:flex;gap:12px;align-items:flex-start;">
+          <span style="color:var(--green);font-size:1rem;flex-shrink:0;margin-top:2px;">✓</span>
+          <p style="font-size:0.88rem;color:var(--text-secondary);margin:0;">Voice assistant readout via Web Speech API</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-4">
+        <div style="display:flex;gap:12px;align-items:flex-start;">
+          <span style="color:var(--green);font-size:1rem;flex-shrink:0;margin-top:2px;">✓</span>
+          <p style="font-size:0.88rem;color:var(--text-secondary);margin:0;">Smart analytics dashboard with Chart.js visualisations</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-4">
+        <div style="display:flex;gap:12px;align-items:flex-start;">
+          <span style="color:var(--green);font-size:1rem;flex-shrink:0;margin-top:2px;">✓</span>
+          <p style="font-size:0.88rem;color:var(--text-secondary);margin:0;">SQLite scan history with filter, view, and delete</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div class="text-center mt-5 fade-in delay-3">
+    <a href="{% url 'upload' %}" class="btn-green" style="font-size:1rem;padding:14px 40px;text-decoration:none;">
+      🚀 Try FreshScan AI Now
+    </a>
+  </div>
+
+</div>
+{% endblock %}

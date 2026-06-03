@@ -1,0 +1,186 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}FreshScan AI – Scan Food{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+
+  <!-- Header -->
+  <div class="text-center mb-5">
+    <p class="section-label">AI Scan</p>
+    <h2 class="section-title">Detect Food Freshness</h2>
+    <p style="color:var(--text-secondary);max-width:480px;margin:auto;">
+      Upload a food image or use your webcam for real-time detection.
+      Our CNN model analyses freshness in seconds.
+    </p>
+  </div>
+
+  <!-- Tab Navigation -->
+  <div class="d-flex justify-content-center mb-5">
+    <div class="glass-card d-inline-flex p-1 gap-1" style="border-radius:12px;">
+      <button class="btn-green" id="tabUploadBtn" onclick="switchTab('upload')"
+              style="border-radius:8px;padding:10px 28px;">
+        📁 Upload Image
+      </button>
+      <button id="tabWebcamBtn" onclick="switchTab('webcam')"
+              style="background:transparent;border:none;color:var(--text-secondary);
+                     font-family:var(--font-display);font-weight:600;font-size:0.9rem;
+                     padding:10px 28px;border-radius:8px;cursor:pointer;transition:all 0.3s;">
+        📹 Webcam Live
+      </button>
+    </div>
+  </div>
+
+  <div class="row g-4 justify-content-center">
+
+    <!-- ── Upload Tab ── -->
+    <div id="uploadTab" class="col-lg-8">
+      <div class="glass-card p-4 p-md-5">
+
+        <!-- Error messages -->
+        {% if form.errors %}
+        <div style="background:rgba(244,67,54,0.1);border:1px solid rgba(244,67,54,0.3);
+                    border-radius:12px;padding:14px 20px;margin-bottom:20px;color:#EF9A9A;font-size:0.88rem;">
+          ❌ {{ form.image.errors.0 }}
+        </div>
+        {% endif %}
+
+        <form method="POST" enctype="multipart/form-data" id="uploadForm" novalidate>
+          {% csrf_token %}
+
+          <!-- Drop Zone -->
+          <div class="upload-zone" id="uploadZone">
+            <input type="file" name="image" id="foodImageInput" accept="image/jpeg,image/png,image/jpg" />
+            <span class="upload-icon">📷</span>
+            <h5 style="font-family:var(--font-display);margin-bottom:8px;">
+              Drag & Drop or Click to Upload
+            </h5>
+            <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:16px;">
+              Supports JPG, PNG, JPEG · Max 10MB
+            </p>
+            <div class="d-flex gap-2 justify-content-center flex-wrap">
+              <span class="stat-chip">🍎 Fruits</span>
+              <span class="stat-chip">🥦 Vegetables</span>
+              <span class="stat-chip">🥩 Meat</span>
+              <span class="stat-chip">🧀 Dairy</span>
+            </div>
+          </div>
+
+          <!-- Image Preview -->
+          <div id="imagePreviewContainer" class="mt-3">
+            <img id="imagePreview" src="" alt="Preview" />
+            <div class="p-3 d-flex justify-content-between align-items-center"
+                 style="background:rgba(255,255,255,0.03);">
+              <span style="font-size:0.82rem;color:var(--text-muted);">✅ Image ready for analysis</span>
+              <button type="button"
+                      onclick="document.getElementById('imagePreviewContainer').style.display='none';
+                               document.getElementById('uploadZone').style.display='block';"
+                      style="background:transparent;border:none;color:var(--red);font-size:0.82rem;cursor:pointer;">
+                ✕ Remove
+              </button>
+            </div>
+          </div>
+
+          <!-- Submit -->
+          <div class="text-center mt-4">
+            <button type="submit" class="btn-green" style="font-size:1rem;padding:14px 48px;width:100%;">
+              🧠 Analyse Freshness
+            </button>
+            <p style="font-size:0.75rem;color:var(--text-muted);margin-top:10px;">
+              Powered by CNN · MobileNetV2 · OpenCV
+            </p>
+          </div>
+        </form>
+      </div>
+
+      <!-- Tips -->
+      <div class="row g-3 mt-2">
+        {% for tip in tips %}{% endfor %}
+        <div class="col-md-4">
+          <div class="glass-card p-3 text-center">
+            <p style="font-size:1.5rem;margin-bottom:6px;">💡</p>
+            <p style="font-size:0.8rem;color:var(--text-secondary);margin:0;">
+              Use clear, well-lit photos for the most accurate predictions.
+            </p>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="glass-card p-3 text-center">
+            <p style="font-size:1.5rem;margin-bottom:6px;">🎯</p>
+            <p style="font-size:0.8rem;color:var(--text-secondary);margin:0;">
+              Centre the food item and avoid too much background clutter.
+            </p>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="glass-card p-3 text-center">
+            <p style="font-size:1.5rem;margin-bottom:6px;">⚡</p>
+            <p style="font-size:0.8rem;color:var(--text-secondary);margin:0;">
+              Results are generated in under 3 seconds with confidence scores.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Webcam Tab (hidden by default) ── -->
+    <div id="webcamTab" class="col-lg-8" style="display:none;">
+      <div class="glass-card p-4">
+        <h5 style="font-family:var(--font-display);margin-bottom:16px;">📹 Live Webcam Detection</h5>
+
+        <!-- Video + canvas -->
+        <video id="webcamVideo" autoplay playsinline muted></video>
+        <canvas id="webcamCanvas" style="display:none;"></canvas>
+
+        <!-- Controls -->
+        <div class="d-flex gap-3 justify-content-center mt-3 flex-wrap">
+          <button id="startWebcam" class="btn-green">
+            ▶ Start Camera
+          </button>
+          <button id="stopWebcam" class="btn-outline-green" style="display:none;">
+            ⏹ Stop
+          </button>
+          <button id="captureWebcam" class="btn-green" style="display:none;background:linear-gradient(135deg,#448AFF,#1565C0);">
+            📸 Capture & Analyse
+          </button>
+        </div>
+
+        <!-- Result -->
+        <div class="webcam-result-overlay mt-4" id="webcamResult">
+          <div class="text-center py-3" style="color:var(--text-muted);">
+            <p style="font-size:1.5rem;margin-bottom:6px;">🎥</p>
+            <p style="font-size:0.85rem;">Start the camera, then click <strong>Capture & Analyse</strong></p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  function switchTab(tab) {
+    const uploadTab   = document.getElementById('uploadTab');
+    const webcamTab   = document.getElementById('webcamTab');
+    const uploadBtn   = document.getElementById('tabUploadBtn');
+    const webcamBtn   = document.getElementById('tabWebcamBtn');
+
+    if (tab === 'upload') {
+      uploadTab.style.display = 'block';
+      webcamTab.style.display = 'none';
+      uploadBtn.classList.add('btn-green');
+      uploadBtn.style.cssText = 'border-radius:8px;padding:10px 28px;';
+      webcamBtn.style.background = 'transparent';
+      webcamBtn.style.color = 'var(--text-secondary)';
+    } else {
+      uploadTab.style.display = 'none';
+      webcamTab.style.display = 'block';
+      webcamBtn.style.background = 'linear-gradient(135deg, var(--green), var(--green-dark))';
+      webcamBtn.style.color = '#fff';
+      uploadBtn.style.background = 'transparent';
+      uploadBtn.style.color = 'var(--text-secondary)';
+    }
+  }
+</script>
+{% endblock %}

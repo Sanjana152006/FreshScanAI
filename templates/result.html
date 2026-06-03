@@ -1,0 +1,245 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}FreshScan AI – Result: {{ scan.food_name }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+
+  <!-- Back -->
+  <div class="mb-4">
+    <a href="{% url 'upload' %}" style="color:var(--text-muted);font-size:0.85rem;text-decoration:none;">
+      ← Back to Scan
+    </a>
+  </div>
+
+  <div class="row g-4">
+
+    <!-- ── Left: Image + Badge ── -->
+    <div class="col-lg-5 slide-left">
+      <div class="glass-card overflow-hidden">
+        <!-- Food image -->
+        <div style="height:280px;overflow:hidden;background:#000;">
+          <img src="{{ scan.image.url }}" alt="{{ scan.food_name }}"
+               style="width:100%;height:100%;object-fit:cover;display:block;" />
+        </div>
+
+        <!-- Badge overlay -->
+        <div class="p-4">
+          <div class="d-flex align-items-center justify-content-between mb-3">
+            <h4 style="font-family:var(--font-display);font-size:1.5rem;margin:0;">
+              {{ scan.food_name }}
+            </h4>
+            <span class="result-badge {% if scan.prediction == 'Fresh' %}fresh{% elif scan.prediction == 'Semi-Fresh' %}semi{% else %}rotten{% endif %}">
+              {% if scan.prediction == 'Fresh' %}✅{% elif scan.prediction == 'Semi-Fresh' %}⚠️{% else %}❌{% endif %}
+              {{ scan.prediction }}
+            </span>
+          </div>
+
+          <p style="font-size:0.8rem;color:var(--text-muted);">
+            📅 Scanned: {{ scan.timestamp|date:"d M Y, H:i" }} &nbsp;|&nbsp;
+            🏷 Category: {{ scan.food_category|title }}
+          </p>
+
+          <!-- Freshness bar -->
+          <p style="font-size:0.78rem;color:var(--text-secondary);margin-bottom:4px;">
+            Freshness Score
+          </p>
+          <div class="freshness-bar-wrap">
+            <div class="freshness-bar {% if scan.prediction == 'Fresh' %}fresh{% elif scan.prediction == 'Semi-Fresh' %}semi{% else %}rotten{% endif %}"
+                 style="width:{{ scan.freshness_score }}%;"></div>
+          </div>
+          <div class="d-flex justify-content-between mt-1">
+            <span style="font-size:0.72rem;color:var(--text-muted);">0%</span>
+            <span style="font-size:0.72rem;font-weight:700;
+              color:{% if scan.prediction == 'Fresh' %}var(--green){% elif scan.prediction == 'Semi-Fresh' %}var(--amber){% else %}var(--red){% endif %};">
+              {{ scan.freshness_score }}%
+            </span>
+            <span style="font-size:0.72rem;color:var(--text-muted);">100%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="row g-2 mt-2">
+        <div class="col-6">
+          <a href="{% url 'download_pdf' scan.id %}" class="btn-green d-block text-center"
+             style="padding:12px;font-size:0.82rem;text-decoration:none;border-radius:10px;">
+            📄 Download PDF
+          </a>
+        </div>
+        <div class="col-6">
+          <a href="{% url 'generate_qr' scan.id %}" class="btn-outline-green d-block text-center"
+             style="padding:12px;font-size:0.82rem;text-decoration:none;border-radius:10px;">
+            📷 QR Code
+          </a>
+        </div>
+        <div class="col-12">
+          <button class="btn-outline-green w-100" id="voiceReadBtn"
+                  data-food="{{ scan.food_name }}"
+                  data-pred="{{ scan.prediction }}"
+                  data-score="{{ scan.freshness_score }}"
+                  data-shelf="{{ scan.shelf_life_days }} days {{ scan.shelf_life_hours }} hours"
+                  style="padding:12px;font-size:0.82rem;border-radius:10px;">
+            🎤 Read Aloud
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Right: Metrics ── -->
+    <div class="col-lg-7 slide-right">
+
+      <!-- Score Ring + Key Metrics row -->
+      <div class="glass-card p-4 mb-4">
+        <div class="row align-items-center g-4">
+
+          <!-- Ring -->
+          <div class="col-md-4 text-center">
+            <div class="score-ring">
+              <svg viewBox="0 0 160 160" width="160" height="160">
+                <circle class="ring-bg" cx="80" cy="80" r="70" />
+                <circle class="ring-fill"
+                  cx="80" cy="80" r="70"
+                  data-score="{{ scan.freshness_score }}"
+                  stroke="{% if scan.prediction == 'Fresh' %}#00C853{% elif scan.prediction == 'Semi-Fresh' %}#FFB300{% else %}#F44336{% endif %}" />
+              </svg>
+              <div class="ring-text">
+                <span class="ring-number"
+                  style="color:{% if scan.prediction == 'Fresh' %}var(--green){% elif scan.prediction == 'Semi-Fresh' %}var(--amber){% else %}var(--red){% endif %};">
+                  0
+                </span>
+                <span class="ring-label">Freshness %</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Metrics -->
+          <div class="col-md-8">
+            <div class="row g-3">
+
+              <div class="col-6">
+                <div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;">
+                  <p style="font-size:0.7rem;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">
+                    Confidence
+                  </p>
+                  <p style="font-family:var(--font-display);font-size:1.6rem;font-weight:800;color:var(--blue-accent);margin:0;">
+                    {{ scan.confidence_score }}%
+                  </p>
+                </div>
+              </div>
+
+              <div class="col-6">
+                <div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;">
+                  <p style="font-size:0.7rem;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">
+                    Shelf Life
+                  </p>
+                  <p style="font-family:var(--font-display);font-size:1.4rem;font-weight:800;color:var(--text-primary);margin:0;">
+                    {{ scan.shelf_life_days }}d {{ scan.shelf_life_hours }}h
+                  </p>
+                </div>
+              </div>
+
+              <div class="col-6">
+                <div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;">
+                  <p style="font-size:0.7rem;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">
+                    Expiry Date
+                  </p>
+                  <p style="font-family:var(--font-display);font-size:1rem;font-weight:800;color:var(--amber);margin:0;">
+                    {% if scan.expiry_date %}{{ scan.expiry_date|date:"d/m/Y" }}{% else %}N/A{% endif %}
+                  </p>
+                </div>
+              </div>
+
+              <div class="col-6">
+                <div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;">
+                  <p style="font-size:0.7rem;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">
+                    Status
+                  </p>
+                  <p style="font-family:var(--font-display);font-size:1rem;font-weight:800;
+                    color:{% if scan.prediction == 'Fresh' %}var(--green){% elif scan.prediction == 'Semi-Fresh' %}var(--amber){% else %}var(--red){% endif %};margin:0;">
+                    {{ colors.text }}
+                  </p>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Storage Suggestion -->
+      <div class="glass-card p-4 mb-4" style="border-color:{% if scan.prediction == 'Fresh' %}rgba(0,200,83,0.2){% elif scan.prediction == 'Semi-Fresh' %}rgba(255,179,0,0.2){% else %}rgba(244,67,54,0.2){% endif %};">
+        <div class="d-flex gap-3 align-items-start">
+          <div style="font-size:1.8rem;flex-shrink:0;">💡</div>
+          <div>
+            <h6 style="font-family:var(--font-display);margin-bottom:6px;color:var(--text-primary);">
+              AI Storage Recommendation
+            </h6>
+            <p style="color:var(--text-secondary);font-size:0.9rem;margin:0;line-height:1.7;">
+              {{ scan.storage_suggestion }}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Confidence Breakdown -->
+      <div class="glass-card p-4">
+        <h6 style="font-family:var(--font-display);margin-bottom:16px;">Detection Breakdown</h6>
+
+        {% for label, info in breakdown.items %}
+        {% endfor %}
+
+        <!-- Static breakdown visual -->
+        <div class="mb-3">
+          <div class="d-flex justify-content-between mb-1">
+            <span style="font-size:0.8rem;color:var(--text-secondary);">🍏 Fresh</span>
+            <span style="font-size:0.8rem;font-weight:700;color:var(--green);">
+              {% if scan.prediction == 'Fresh' %}{{ scan.confidence_score }}%{% else %}{{ scan.freshness_score|floatformat:1 }}%{% endif %}
+            </span>
+          </div>
+          <div class="freshness-bar-wrap" style="height:8px;">
+            <div class="freshness-bar fresh" style="width:{% if scan.prediction == 'Fresh' %}{{ scan.confidence_score }}{% else %}{{ scan.freshness_score }}{% endif %}%;"></div>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <div class="d-flex justify-content-between mb-1">
+            <span style="font-size:0.8rem;color:var(--text-secondary);">🟡 Semi-Fresh</span>
+            <span style="font-size:0.8rem;font-weight:700;color:var(--amber);">
+              {% if scan.prediction == 'Semi-Fresh' %}{{ scan.confidence_score }}%{% else %}15%{% endif %}
+            </span>
+          </div>
+          <div class="freshness-bar-wrap" style="height:8px;">
+            <div class="freshness-bar semi" style="width:{% if scan.prediction == 'Semi-Fresh' %}{{ scan.confidence_score }}{% else %}15{% endif %}%;"></div>
+          </div>
+        </div>
+
+        <div class="mb-0">
+          <div class="d-flex justify-content-between mb-1">
+            <span style="font-size:0.8rem;color:var(--text-secondary);">🔴 Rotten</span>
+            <span style="font-size:0.8rem;font-weight:700;color:var(--red);">
+              {% if scan.prediction == 'Rotten' %}{{ scan.confidence_score }}%{% else %}8%{% endif %}
+            </span>
+          </div>
+          <div class="freshness-bar-wrap" style="height:8px;">
+            <div class="freshness-bar rotten" style="width:{% if scan.prediction == 'Rotten' %}{{ scan.confidence_score }}{% else %}8{% endif %}%;"></div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="d-flex justify-content-between">
+          <a href="{% url 'upload' %}" class="btn-outline-green" style="font-size:0.82rem;padding:9px 20px;text-decoration:none;">
+            + Scan Another
+          </a>
+          <a href="{% url 'history' %}" style="color:var(--text-muted);font-size:0.82rem;align-self:center;text-decoration:none;">
+            View History →
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}

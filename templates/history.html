@@ -1,0 +1,200 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}FreshScan AI – Scan History{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-start mb-4 flex-wrap gap-3">
+    <div>
+      <p class="section-label mb-0">Records</p>
+      <h2 style="font-family:var(--font-display);font-size:2rem;letter-spacing:-1px;margin:0;">
+        Scan History
+      </h2>
+      <p style="color:var(--text-secondary);margin-top:4px;font-size:0.88rem;">
+        {{ total }} scan{{ total|pluralize }} found
+      </p>
+    </div>
+    <a href="{% url 'upload' %}" class="btn-green" style="text-decoration:none;align-self:flex-start;">
+      + New Scan
+    </a>
+  </div>
+
+  <!-- Filter pills -->
+  <div class="d-flex gap-2 flex-wrap mb-4">
+    {% for label, key in filter_options %}{% endfor %}
+    <a href="{% url 'history' %}?filter=all"
+       class="stat-chip {% if filter_by == 'all' %}active{% endif %}"
+       style="text-decoration:none;{% if filter_by == 'all' %}border-color:var(--green);color:var(--green);{% endif %}">
+      🔵 All
+    </a>
+    <a href="{% url 'history' %}?filter=fresh"
+       class="stat-chip"
+       style="text-decoration:none;{% if filter_by == 'fresh' %}border-color:var(--green);color:var(--green);{% endif %}">
+      ✅ Fresh
+    </a>
+    <a href="{% url 'history' %}?filter=semi"
+       class="stat-chip"
+       style="text-decoration:none;{% if filter_by == 'semi' %}border-color:var(--amber);color:var(--amber);{% endif %}">
+      ⚠️ Semi-Fresh
+    </a>
+    <a href="{% url 'history' %}?filter=rotten"
+       class="stat-chip"
+       style="text-decoration:none;{% if filter_by == 'rotten' %}border-color:var(--red);color:var(--red){% endif %}">
+      ❌ Rotten
+    </a>
+  </div>
+
+  <!-- Table -->
+  {% if scans %}
+  <div class="glass-card p-0 overflow-hidden">
+    <!-- Desktop table -->
+    <div class="d-none d-md-block" style="overflow-x:auto;">
+      <table class="history-table" style="border-spacing:0;width:100%;">
+        <thead>
+          <tr>
+            <th style="padding:16px 20px;border-bottom:1px solid var(--border);">Image</th>
+            <th style="padding:16px 20px;border-bottom:1px solid var(--border);">Food</th>
+            <th style="padding:16px 20px;border-bottom:1px solid var(--border);">Status</th>
+            <th style="padding:16px 20px;border-bottom:1px solid var(--border);">Score</th>
+            <th style="padding:16px 20px;border-bottom:1px solid var(--border);">Shelf Life</th>
+            <th style="padding:16px 20px;border-bottom:1px solid var(--border);">Expiry</th>
+            <th style="padding:16px 20px;border-bottom:1px solid var(--border);">Date</th>
+            <th style="padding:16px 20px;border-bottom:1px solid var(--border);">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for scan in scans %}
+          <tr style="border-bottom:1px solid var(--border);">
+
+            <!-- Image -->
+            <td style="padding:12px 20px;">
+              <div style="width:48px;height:48px;border-radius:10px;overflow:hidden;border:1px solid var(--border);">
+                <img src="{{ scan.image.url }}" alt="{{ scan.food_name }}"
+                     style="width:100%;height:100%;object-fit:cover;" />
+              </div>
+            </td>
+
+            <!-- Name -->
+            <td style="padding:12px 20px;">
+              <p style="font-family:var(--font-display);font-weight:700;margin:0;font-size:0.9rem;">
+                {{ scan.food_name }}
+              </p>
+              <p style="font-size:0.72rem;color:var(--text-muted);margin:0;">
+                {{ scan.food_category|title }}
+              </p>
+            </td>
+
+            <!-- Status -->
+            <td style="padding:12px 20px;">
+              <span class="result-badge {% if scan.prediction == 'Fresh' %}fresh{% elif scan.prediction == 'Semi-Fresh' %}semi{% else %}rotten{% endif %}"
+                    style="font-size:0.72rem;padding:5px 12px;">
+                {% if scan.prediction == 'Fresh' %}✅{% elif scan.prediction == 'Semi-Fresh' %}⚠️{% else %}❌{% endif %}
+                {{ scan.prediction }}
+              </span>
+            </td>
+
+            <!-- Score -->
+            <td style="padding:12px 20px;">
+              <p style="font-family:var(--font-display);font-size:1.1rem;font-weight:800;margin:0;
+                color:{% if scan.prediction == 'Fresh' %}var(--green){% elif scan.prediction == 'Semi-Fresh' %}var(--amber){% else %}var(--red){% endif %};">
+                {{ scan.freshness_score }}%
+              </p>
+            </td>
+
+            <!-- Shelf Life -->
+            <td style="padding:12px 20px;">
+              <span style="font-size:0.85rem;color:var(--text-secondary);">
+                {{ scan.shelf_life_days }}d {{ scan.shelf_life_hours }}h
+              </span>
+            </td>
+
+            <!-- Expiry -->
+            <td style="padding:12px 20px;">
+              <span style="font-size:0.82rem;color:var(--amber);">
+                {% if scan.expiry_date %}{{ scan.expiry_date|date:"d/m/Y" }}{% else %}—{% endif %}
+              </span>
+            </td>
+
+            <!-- Date -->
+            <td style="padding:12px 20px;">
+              <span style="font-size:0.78rem;color:var(--text-muted);">
+                {{ scan.timestamp|date:"d M Y" }}<br>{{ scan.timestamp|date:"H:i" }}
+              </span>
+            </td>
+
+            <!-- Actions -->
+            <td style="padding:12px 20px;">
+              <div class="d-flex gap-2">
+                <a href="{% url 'result' scan.id %}"
+                   style="background:rgba(68,138,255,0.15);color:#448AFF;border:1px solid rgba(68,138,255,0.3);
+                          border-radius:8px;padding:5px 12px;font-size:0.75rem;text-decoration:none;
+                          font-family:var(--font-display);font-weight:600;transition:all 0.2s;">
+                  View
+                </a>
+                <a href="{% url 'download_pdf' scan.id %}"
+                   style="background:rgba(0,200,83,0.1);color:var(--green);border:1px solid rgba(0,200,83,0.25);
+                          border-radius:8px;padding:5px 12px;font-size:0.75rem;text-decoration:none;
+                          font-family:var(--font-display);font-weight:600;transition:all 0.2s;">
+                  PDF
+                </a>
+                <a href="{% url 'delete_scan' scan.id %}"
+                   onclick="return confirm('Delete this scan?')"
+                   style="background:rgba(244,67,54,0.1);color:var(--red);border:1px solid rgba(244,67,54,0.25);
+                          border-radius:8px;padding:5px 12px;font-size:0.75rem;text-decoration:none;
+                          font-family:var(--font-display);font-weight:600;transition:all 0.2s;">
+                  Del
+                </a>
+              </div>
+            </td>
+
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Mobile card list -->
+    <div class="d-md-none p-3">
+      {% for scan in scans %}
+      <div class="glass-card p-3 mb-3">
+        <div class="d-flex gap-3 align-items-center mb-2">
+          <div style="width:52px;height:52px;border-radius:10px;overflow:hidden;flex-shrink:0;">
+            <img src="{{ scan.image.url }}" alt="{{ scan.food_name }}"
+                 style="width:100%;height:100%;object-fit:cover;" />
+          </div>
+          <div class="flex-grow-1">
+            <p style="font-family:var(--font-display);font-weight:700;margin:0;">{{ scan.food_name }}</p>
+            <p style="font-size:0.72rem;color:var(--text-muted);margin:0;">{{ scan.timestamp|date:"d M Y, H:i" }}</p>
+          </div>
+          <span class="result-badge {% if scan.prediction == 'Fresh' %}fresh{% elif scan.prediction == 'Semi-Fresh' %}semi{% else %}rotten{% endif %}"
+                style="font-size:0.7rem;padding:5px 10px;">
+            {{ scan.prediction }}
+          </span>
+        </div>
+        <div class="d-flex gap-2 justify-content-end">
+          <a href="{% url 'result' scan.id %}" style="font-size:0.78rem;color:var(--blue-accent);text-decoration:none;">View →</a>
+          <a href="{% url 'download_pdf' scan.id %}" style="font-size:0.78rem;color:var(--green);text-decoration:none;">PDF</a>
+          <a href="{% url 'delete_scan' scan.id %}" onclick="return confirm('Delete?')"
+             style="font-size:0.78rem;color:var(--red);text-decoration:none;">Delete</a>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  {% else %}
+  <div class="glass-card p-5 text-center">
+    <p style="font-size:3rem;margin-bottom:16px;">🔍</p>
+    <h5 style="font-family:var(--font-display);margin-bottom:8px;">No scans found</h5>
+    <p style="color:var(--text-secondary);font-size:0.88rem;margin-bottom:24px;">
+      {% if filter_by != 'all' %}No {{ filter_by }} items in history.{% else %}Upload your first food image to get started.{% endif %}
+    </p>
+    <a href="{% url 'upload' %}" class="btn-green" style="text-decoration:none;">+ Start Scanning</a>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

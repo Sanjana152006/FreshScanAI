@@ -1,0 +1,255 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}FreshScan AI – Home{% endblock %}
+
+{% block content %}
+
+<!-- ── Hero Section ── -->
+<section class="hero">
+  <div class="hero-bg-grid"></div>
+  <div class="hero-glow"></div>
+  <div class="container position-relative" style="z-index:1;">
+    <div class="row align-items-center g-5">
+
+      <!-- Left: Copy -->
+      <div class="col-lg-6">
+        <div class="hero-eyebrow fade-in">
+          <span class="pulse-dot"></span>
+          AI-Powered Detection
+        </div>
+
+        <h1 class="fade-in delay-1">
+          Know If Your<br>
+          Food Is <span class="gradient-text">Still Fresh</span>
+        </h1>
+
+        <p class="fade-in delay-2">
+          Upload a photo of any food item and our CNN-powered AI will instantly
+          tell you its freshness level, remaining shelf life, expiry date, and
+          smart storage tips.
+        </p>
+
+        <div class="d-flex gap-3 flex-wrap fade-in delay-3">
+          <a href="{% url 'upload' %}" class="btn-green">
+            🔍 Scan Food Now
+          </a>
+          <a href="{% url 'dashboard' %}" class="btn-outline-green">
+            📊 View Dashboard
+          </a>
+        </div>
+
+        <!-- Stats Row -->
+        <div class="d-flex gap-3 flex-wrap mt-4 fade-in delay-4">
+          <div class="stat-chip">
+            <span class="dot" style="background:var(--green);"></span>
+            {{ total_scans }} Total Scans
+          </div>
+          <div class="stat-chip">
+            <span class="dot" style="background:#00C853;"></span>
+            {{ fresh_count }} Fresh Items
+          </div>
+          <div class="stat-chip">
+            <span class="dot" style="background:#F44336;"></span>
+            {{ rotten_count }} Rotten Detected
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Visual Card -->
+      <div class="col-lg-6 fade-in delay-2">
+        <div class="glass-card p-4" style="max-width:420px; margin:auto;">
+          <!-- Simulated scan card -->
+          <div class="d-flex align-items-center justify-content-between mb-3">
+            <span style="font-family:var(--font-display);font-size:0.8rem;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase;">Latest Scan</span>
+            <span style="background:rgba(0,200,83,0.12);color:var(--green);padding:3px 10px;border-radius:100px;font-size:0.72rem;font-weight:700;">LIVE</span>
+          </div>
+
+          {% if recent_scans %}
+            {% with scan=recent_scans.0 %}
+            <div class="d-flex align-items-center gap-3 mb-3">
+              <div style="width:60px;height:60px;border-radius:12px;overflow:hidden;border:1px solid var(--border);">
+                <img src="{{ scan.image.url }}" alt="food" style="width:100%;height:100%;object-fit:cover;" />
+              </div>
+              <div>
+                <p style="font-family:var(--font-display);font-weight:700;font-size:1rem;margin:0;">{{ scan.food_name }}</p>
+                <p style="color:var(--text-muted);font-size:0.78rem;margin:0;">{{ scan.timestamp|timesince }} ago</p>
+              </div>
+              <div class="ms-auto">
+                <span class="result-badge {% if scan.prediction == 'Fresh' %}fresh{% elif scan.prediction == 'Semi-Fresh' %}semi{% else %}rotten{% endif %}" style="font-size:0.72rem;padding:6px 14px;">
+                  {{ scan.prediction }}
+                </span>
+              </div>
+            </div>
+            <div class="freshness-bar-wrap">
+              <div class="freshness-bar {% if scan.prediction == 'Fresh' %}fresh{% elif scan.prediction == 'Semi-Fresh' %}semi{% else %}rotten{% endif %}"
+                   style="width:{{ scan.freshness_score }}%;"></div>
+            </div>
+            <p style="font-size:0.78rem;color:var(--text-muted);text-align:right;margin-top:4px;">
+              Freshness: <strong style="color:var(--text-primary);">{{ scan.freshness_score }}%</strong>
+            </p>
+            {% endwith %}
+          {% else %}
+            <div class="text-center py-4">
+              <p style="font-size:2.5rem;">🍎</p>
+              <p style="color:var(--text-muted);font-size:0.88rem;">No scans yet. Upload your first food image!</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ── Features Section ── -->
+<section class="py-5 mt-3">
+  <div class="container">
+    <div class="text-center mb-5">
+      <p class="section-label">What We Detect</p>
+      <h2 class="section-title">Everything You Need to Know</h2>
+      <p style="color:var(--text-secondary);max-width:500px;margin:auto;">
+        Our CNN model analyses visual cues to deliver comprehensive freshness insights.
+      </p>
+    </div>
+
+    <div class="row g-4">
+      {% for item in features %}
+      <div class="col-md-6 col-lg-4 fade-in delay-{{ forloop.counter }}">
+      {% endfor %}
+
+      <!-- Feature cards - hardcoded for reliability -->
+      <div class="col-md-6 col-lg-4">
+        <div class="glass-card p-4 h-100">
+          <div class="feature-icon">🧠</div>
+          <h5 style="font-family:var(--font-display);margin-bottom:8px;">CNN Detection</h5>
+          <p style="color:var(--text-secondary);font-size:0.88rem;margin:0;">
+            MobileNetV2-based transfer learning model trained on thousands of food images with 4 freshness classes.
+          </p>
+        </div>
+      </div>
+
+      <div class="col-md-6 col-lg-4">
+        <div class="glass-card p-4 h-100">
+          <div class="feature-icon">📊</div>
+          <h5 style="font-family:var(--font-display);margin-bottom:8px;">Freshness Score</h5>
+          <p style="color:var(--text-secondary);font-size:0.88rem;margin:0;">
+            Get a precise 0–100% freshness score with visual confidence bars and colour-coded indicators.
+          </p>
+        </div>
+      </div>
+
+      <div class="col-md-6 col-lg-4">
+        <div class="glass-card p-4 h-100">
+          <div class="feature-icon">⏱️</div>
+          <h5 style="font-family:var(--font-display);margin-bottom:8px;">Shelf Life Prediction</h5>
+          <p style="color:var(--text-secondary);font-size:0.88rem;margin:0;">
+            Estimated remaining shelf life in days and hours, plus an expiry date calculated from freshness state.
+          </p>
+        </div>
+      </div>
+
+      <div class="col-md-6 col-lg-4">
+        <div class="glass-card p-4 h-100">
+          <div class="feature-icon">💡</div>
+          <h5 style="font-family:var(--font-display);margin-bottom:8px;">Storage Suggestions</h5>
+          <p style="color:var(--text-secondary);font-size:0.88rem;margin:0;">
+            AI-generated category-aware storage tips: refrigerate, consume immediately, or discard safely.
+          </p>
+        </div>
+      </div>
+
+      <div class="col-md-6 col-lg-4">
+        <div class="glass-card p-4 h-100">
+          <div class="feature-icon">📹</div>
+          <h5 style="font-family:var(--font-display);margin-bottom:8px;">Webcam Detection</h5>
+          <p style="color:var(--text-secondary);font-size:0.88rem;margin:0;">
+            Real-time webcam scanning — point your camera at any food item and get instant freshness results.
+          </p>
+        </div>
+      </div>
+
+      <div class="col-md-6 col-lg-4">
+        <div class="glass-card p-4 h-100">
+          <div class="feature-icon">📄</div>
+          <h5 style="font-family:var(--font-display);margin-bottom:8px;">PDF & QR Reports</h5>
+          <p style="color:var(--text-secondary);font-size:0.88rem;margin:0;">
+            Download a professional PDF report or scan a QR code to share results instantly on any device.
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ── Recent Scans ── -->
+{% if recent_scans %}
+<section class="py-5">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div>
+        <p class="section-label mb-0">History</p>
+        <h3 style="font-family:var(--font-display);font-size:1.5rem;margin:0;">Recent Scans</h3>
+      </div>
+      <a href="{% url 'history' %}" class="btn-outline-green" style="padding:8px 20px;font-size:0.82rem;">
+        View All →
+      </a>
+    </div>
+
+    <div class="row g-3">
+      {% for scan in recent_scans %}
+      <div class="col-md-6 col-lg-4 fade-in delay-{{ forloop.counter }}">
+        <a href="{% url 'result' scan.id %}" style="text-decoration:none;">
+          <div class="glass-card p-3 h-100">
+            <div class="d-flex gap-3 align-items-center">
+              <div style="width:54px;height:54px;border-radius:10px;overflow:hidden;flex-shrink:0;">
+                <img src="{{ scan.image.url }}" alt="food" style="width:100%;height:100%;object-fit:cover;" />
+              </div>
+              <div class="flex-grow-1 overflow-hidden">
+                <p style="font-family:var(--font-display);font-weight:700;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                  {{ scan.food_name }}
+                </p>
+                <p style="font-size:0.75rem;color:var(--text-muted);margin:2px 0 6px;">
+                  {{ scan.timestamp|date:"d M Y, H:i" }}
+                </p>
+                <div class="freshness-bar-wrap" style="height:6px;">
+                  <div class="freshness-bar {% if scan.prediction == 'Fresh' %}fresh{% elif scan.prediction == 'Semi-Fresh' %}semi{% else %}rotten{% endif %}"
+                       style="width:{{ scan.freshness_score }}%;"></div>
+                </div>
+              </div>
+              <div class="ms-1 text-end" style="flex-shrink:0;">
+                <p style="font-family:var(--font-display);font-size:0.9rem;font-weight:800;
+                  color:{% if scan.prediction == 'Fresh' %}var(--green){% elif scan.prediction == 'Semi-Fresh' %}var(--amber){% else %}var(--red){% endif %};margin:0;">
+                  {{ scan.freshness_score }}%
+                </p>
+                <p style="font-size:0.7rem;color:var(--text-muted);margin:0;">{{ scan.prediction }}</p>
+              </div>
+            </div>
+          </div>
+        </a>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- ── CTA ── -->
+<section class="py-5 mb-4">
+  <div class="container">
+    <div class="glass-card p-5 text-center" style="background:linear-gradient(135deg,rgba(0,200,83,0.08),rgba(68,138,255,0.05));">
+      <h2 style="font-family:var(--font-display);font-size:2rem;letter-spacing:-1px;margin-bottom:12px;">
+        Ready to Scan Your Food?
+      </h2>
+      <p style="color:var(--text-secondary);max-width:400px;margin:0 auto 28px;">
+        Upload a photo in seconds and get a complete freshness analysis powered by AI.
+      </p>
+      <a href="{% url 'upload' %}" class="btn-green" style="font-size:1rem;padding:14px 36px;">
+        🚀 Start Scanning Now
+      </a>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

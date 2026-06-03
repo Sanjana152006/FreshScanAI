@@ -1,0 +1,226 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}FreshScan AI – Dashboard{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+
+  <!-- Header -->
+  <div class="mb-5">
+    <p class="section-label mb-0">Analytics</p>
+    <h2 style="font-family:var(--font-display);font-size:2rem;letter-spacing:-1px;margin:0;">
+      Smart Dashboard
+    </h2>
+    <p style="color:var(--text-secondary);margin-top:4px;font-size:0.88rem;">
+      Real-time statistics and insights from all food scans.
+    </p>
+  </div>
+
+  <!-- ── Stat Cards Row ── -->
+  <div class="row g-3 mb-4">
+
+    <div class="col-6 col-lg-3">
+      <div class="glass-card dash-stat-card fade-in delay-1">
+        <span class="dash-icon">🔬</span>
+        <p class="dash-number" style="color:var(--text-primary);">{{ total }}</p>
+        <p class="dash-label">Total Scans</p>
+      </div>
+    </div>
+
+    <div class="col-6 col-lg-3">
+      <div class="glass-card dash-stat-card fade-in delay-2">
+        <span class="dash-icon">✅</span>
+        <p class="dash-number" style="color:var(--green);">{{ fresh }}</p>
+        <p class="dash-label">Fresh Items</p>
+      </div>
+    </div>
+
+    <div class="col-6 col-lg-3">
+      <div class="glass-card dash-stat-card fade-in delay-3">
+        <span class="dash-icon">⚠️</span>
+        <p class="dash-number" style="color:var(--amber);">{{ semi }}</p>
+        <p class="dash-label">Semi-Fresh</p>
+      </div>
+    </div>
+
+    <div class="col-6 col-lg-3">
+      <div class="glass-card dash-stat-card fade-in delay-4">
+        <span class="dash-icon">❌</span>
+        <p class="dash-number" style="color:var(--red);">{{ rotten }}</p>
+        <p class="dash-label">Rotten Items</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── Second Stat Row ── -->
+  <div class="row g-3 mb-5">
+
+    <div class="col-md-4">
+      <div class="glass-card p-4 text-center fade-in delay-1">
+        <p style="font-size:0.72rem;color:var(--text-muted);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px;">
+          Avg. Freshness Score
+        </p>
+        <p style="font-family:var(--font-display);font-size:2.4rem;font-weight:800;color:var(--green);margin:0;">
+          {{ avg_score }}%
+        </p>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="glass-card p-4 text-center fade-in delay-2">
+        <p style="font-size:0.72rem;color:var(--text-muted);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px;">
+          Fresh Rate
+        </p>
+        <p style="font-family:var(--font-display);font-size:2.4rem;font-weight:800;color:var(--green);margin:0;">
+          {{ fresh_pct }}%
+        </p>
+        <div class="freshness-bar-wrap mt-2">
+          <div class="freshness-bar fresh" style="width:{{ fresh_pct }}%;"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="glass-card p-4 text-center fade-in delay-3">
+        <p style="font-size:0.72rem;color:var(--text-muted);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px;">
+          Rotten Rate
+        </p>
+        <p style="font-family:var(--font-display);font-size:2.4rem;font-weight:800;color:var(--red);margin:0;">
+          {{ rotten_pct }}%
+        </p>
+        <div class="freshness-bar-wrap mt-2">
+          <div class="freshness-bar rotten" style="width:{{ rotten_pct }}%;"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── Charts Row ── -->
+  <div class="row g-4 mb-5">
+
+    <!-- Donut chart -->
+    <div class="col-lg-4">
+      <div class="glass-card p-4 h-100">
+        <h6 style="font-family:var(--font-display);margin-bottom:20px;">Freshness Distribution</h6>
+        <div style="max-width:260px;margin:auto;">
+          <canvas id="freshnessDonut"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Daily bar chart -->
+    <div class="col-lg-8">
+      <div class="glass-card p-4 h-100">
+        <h6 style="font-family:var(--font-display);margin-bottom:20px;">Daily Scan Volume</h6>
+        {% if total > 0 %}
+          <canvas id="dailyScansChart" style="max-height:240px;"></canvas>
+        {% else %}
+          <div class="text-center py-5" style="color:var(--text-muted);">
+            <p style="font-size:2rem;">📈</p>
+            <p>No scan data yet. Start scanning to see trends.</p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── Category + Recent ── -->
+  <div class="row g-4">
+
+    <!-- Category chart -->
+    <div class="col-lg-5">
+      <div class="glass-card p-4 h-100">
+        <h6 style="font-family:var(--font-display);margin-bottom:20px;">Food Category Distribution</h6>
+        {% if total > 0 %}
+          <canvas id="categoryChart" style="max-height:260px;"></canvas>
+        {% else %}
+          <div class="text-center py-4" style="color:var(--text-muted);font-size:0.88rem;">
+            No category data yet.
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Recent table -->
+    <div class="col-lg-7">
+      <div class="glass-card p-4 h-100">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h6 style="font-family:var(--font-display);margin:0;">Recent Scans</h6>
+          <a href="{% url 'history' %}" style="font-size:0.78rem;color:var(--text-muted);text-decoration:none;">
+            View all →
+          </a>
+        </div>
+
+        {% if recent %}
+        <div style="overflow-x:auto;">
+          <table style="width:100%;border-collapse:collapse;">
+            <thead>
+              <tr>
+                <th style="font-size:0.68rem;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase;padding:0 12px 10px 0;font-weight:600;">Food</th>
+                <th style="font-size:0.68rem;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase;padding:0 12px 10px 0;font-weight:600;">Status</th>
+                <th style="font-size:0.68rem;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase;padding:0 0 10px 0;font-weight:600;">Score</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for scan in recent %}
+              <tr style="border-top:1px solid var(--border);">
+                <td style="padding:10px 12px 10px 0;">
+                  <div class="d-flex align-items-center gap-2">
+                    <div style="width:32px;height:32px;border-radius:6px;overflow:hidden;flex-shrink:0;">
+                      <img src="{{ scan.image.url }}" style="width:100%;height:100%;object-fit:cover;" />
+                    </div>
+                    <span style="font-size:0.82rem;font-weight:600;color:var(--text-primary);">{{ scan.food_name }}</span>
+                  </div>
+                </td>
+                <td style="padding:10px 12px 10px 0;">
+                  <span class="result-badge {% if scan.prediction == 'Fresh' %}fresh{% elif scan.prediction == 'Semi-Fresh' %}semi{% else %}rotten{% endif %}"
+                        style="font-size:0.68rem;padding:4px 10px;">
+                    {{ scan.prediction }}
+                  </span>
+                </td>
+                <td style="padding:10px 0;">
+                  <span style="font-family:var(--font-display);font-weight:800;
+                    color:{% if scan.prediction == 'Fresh' %}var(--green){% elif scan.prediction == 'Semi-Fresh' %}var(--amber){% else %}var(--red){% endif %};">
+                    {{ scan.freshness_score }}%
+                  </span>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="text-center py-4" style="color:var(--text-muted);font-size:0.88rem;">
+          <p>No scans yet.</p>
+          <a href="{% url 'upload' %}" class="btn-green" style="text-decoration:none;font-size:0.82rem;padding:8px 20px;">
+            Start Scanning
+          </a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Pass Django data to Chart.js
+  const pieData     = {{ pie_data|safe }};
+  const dailyLabels = {{ daily_labels|safe }};
+  const dailyCounts = {{ daily_counts|safe }};
+  const catLabels   = {{ cat_labels|safe }};
+  const catCounts   = {{ cat_counts|safe }};
+
+  // initDashboardCharts is defined in main.js
+  window.addEventListener('load', () => {
+    initDashboardCharts(pieData, dailyLabels, dailyCounts, catLabels, catCounts);
+  });
+</script>
+{% endblock %}
